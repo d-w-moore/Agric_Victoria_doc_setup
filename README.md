@@ -58,5 +58,7 @@
 
      `ireg -R s3resc -C /avr-irods-data/"Example Data" /tempZone/home/rods/"Example Data"`
 
-   - Unregister S3 contents with (in this case): `irm -Ur /tempZone/home/rods/"Example Data"`
-   
+   - When/if necessary, unregister S3 contents with (in this case): 
+
+     `irm -Ur /tempZone/home/rods/"Example Data"`
+     (Do not use `irm -fr ... ` as this could delete bucket contents.)   
