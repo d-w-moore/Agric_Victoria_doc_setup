@@ -33,7 +33,9 @@
 
    - `sudo python /var/lib/irods/scripts/setup_irods.py </var/lib/irods/packaging/localhost_setup_postgres.input`
 
-## Install iRODS externals and other build pre-req's; and Compile/Install S3 plugin
+## Install iRODS externals pre-req's for S3 & Python
+
+   - `sudo yum install -y irods-rule-engine-plugin-python`
 
    - `sudo yum install -y irods-externals\* gcc openssl-devel curl-devel libxml2-devel rpm-build`
 
@@ -41,7 +43,7 @@
 
    - `cd irods_resource_plugin_s3 &&git checkout 4-2-stable ; /opt/irods-externals/cmake3.11.4-0/bin/cmake ../irods*s3`
 
-   - `make package ; sudo make install`
+   - `make package ; rpm -ivh --force ../irods*s3*rpm`
 
 ## As the iRODS admin, make the resource
 
@@ -50,7 +52,7 @@
    - Put S3 credentials into `/var/lib/irods/s3.keypair`
 
    - ```
-   iadmin mkresc s3resc s3  $(hostname):/avr-irods-data "S3_DEFAULT_HOSTNAME=s3.ap-southeast-2.amazonaws.com;S3_AUTH_FILE=/var/lib/irods/s3.keypair;S3_REGIONNAME=ap-southeast-2;S3_RETRY_COUNT=2;S3_WAIT_TIME_SEC=3;S3_PROTO=HTTP;HOST_MODE=cacheless_attached;S3_SIGNATURE_VERSION=4;S3_ENABLE_MPU=1;S3_MPU_THREADS=30;S3_MPU_CHUNK=256"
+     iadmin mkresc s3resc s3  $(hostname):/avr-irods-data "S3_DEFAULT_HOSTNAME=s3.ap-southeast-2.amazonaws.com;S3_AUTH_FILE=/var/lib/irods/s3.keypair;S3_REGIONNAME=ap-southeast-2;S3_RETRY_COUNT=2;S3_WAIT_TIME_SEC=3;S3_PROTO=HTTP;HOST_MODE=cacheless_attached;S3_SIGNATURE_VERSION=4;S3_ENABLE_MPU=1;S3_MPU_THREADS=30;S3_MPU_CHUNK=256"
    ```
 
    - Register S3 contents with: `ireg -R s3resc -C /avr-irods-data/"Example Data" /tempZone/home/rods/"Example Data"`
