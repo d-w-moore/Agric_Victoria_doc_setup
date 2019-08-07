@@ -41,7 +41,7 @@
 
    - `mkdir ~/github ; cd ~/github ; git clone https://github.com/irods/irods_resource_plugin_s3`
 
-   - `cd irods_resource_plugin_s3 &&git checkout 4-2-stable ; /opt/irods-externals/cmake3.11.4-0/bin/cmake ../irods*s3`
+   - `cd irods_resource_plugin_s3 &&git checkout 4-2-stable ; mkdir ../obj ; cd ../obj ; /opt/irods-externals/cmake3.11.4-0/bin/cmake ../irods*s3`
 
    - `make package ; rpm -ivh --force ../irods*s3*rpm`
 
