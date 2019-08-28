@@ -62,3 +62,19 @@
 
      `irm -Ur /tempZone/home/rods/"Example Data"`
      (Do not use `irm -fr ... ` as this could delete bucket contents.)   
+
+## install s3fs
+
+   - `sudo yum install s3fs-fuse` (as admin enabled user)
+   
+   - setup example (as iRODS) : (having placed <Access_Key>:<secret_key> into `~irods/.passwd-s3fs`
+     issue this command, as `irods` user:
+     ```
+     cd ; mkdir irods_s3 ; s3fs avr-irods-data `pwd`/irods_s3 -o passwd_file=$HOME/.passwd-s3fs,umask=033,allow_other,endpoint="ap-southeast-2",url="https://s3.ap-southeast-2.amazonaws.com" 
+
+     ```
+   
+   - ...
+   
+## install iRODS-capability-automated-ingest
+   - 
