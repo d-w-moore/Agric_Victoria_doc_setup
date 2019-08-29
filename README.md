@@ -1,5 +1,5 @@
 
-# S3 setup for Agriculture Victoria iRODS demo
+# iRODS and S3 setup for Agriculture Victoria iRODS demo
 
 ## OS changes
 
