@@ -63,18 +63,22 @@
      `irm -Ur /tempZone/home/rods/"Example Data"`
      (Do not use `irm -fr ... ` as this could delete bucket contents.)   
 
-## install s3fs
-
+## install s3fs and mounting an s3 bucket as filesystem
+   - The Proof Of Concept will use an s3fs mounted bucket to allow arbitrary POSIX-like accesses to a file object in the bucket without downloading the full object.
+   
    - `sudo yum install s3fs-fuse` (as admin enabled user)
    
    - setup example (as iRODS) : (having placed <Access_Key>:<secret_key> into `~irods/.passwd-s3fs`
      issue this command, as `irods` user:
      ```
-     cd ; mkdir irods_s3 ; s3fs avr-irods-data `pwd`/irods_s3 -o passwd_file=$HOME/.passwd-s3fs,umask=033,allow_other,endpoint="ap-southeast-2",url="https://s3.ap-southeast-2.amazonaws.com" 
-
+     cd ; mkdir irods_s3 ; s3fs avr-irods-data `pwd`/irods_s3 -o passwd_file=$HOME/.passwd-s3fs,umask=033,allow_other,endpoint="ap-southeast-2",url="https://s3.ap-southeast-2.amazonaws.com"
      ```
-   
-   - ...
+     The command `fusermount -u irods_s3` will unmount the filesystem.
+     
+   - Appending the following line in the `/etc/fstab` will cause the bucket to be mounted  automatically at boot time.
+   ```
+   s3fs#avr-irods-data /mnt/avr-irods-data fuse ro,allow_other,umask=022,passwd_file=/etc/avr-irods-data_passwd-s3fs,endpoint=ap-southeast-2,url=https://s3.ap-southeast-2.amazonaws.com
+   ```
    
 ## install iRODS-capability-automated-ingest
    - 
