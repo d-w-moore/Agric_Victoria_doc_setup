@@ -1,27 +1,32 @@
 
 # iRODS and S3 setup for Agriculture Victoria iRODS demo
+- Centos 7 based setup
+- if we're on a VM, need >= 15 GB on root partn to start. will move database to a different
+  partition, later, if needed to support large amounts of metadata.
+- allot 4 CPUs (ie 8 cores, or threads, as shown by `htop` display)
 
 ## OS changes
 
    - edit `/etc/selinux/config`
      replace `enforcing` with `disabled` and reboot
+     (on next reboot `sestatus` should show that SELinux is **disabled**)
    - configure passwordless `sudo`
      `loginName ALL=(ALL) NOPASSWD: ALL` as last
      line of `sudoers`
-   - `sudo yum install -y epel-release wget git vim nano`
-   - disable IPTABLES and any firewalls
-     * `sudo yum remove -y firewalld iptables iptables-services`
-     * `iptables -F`
-
+   - `sudo yum install -y epel-release wget git vim nano tmux htop`
+   - disable firewall
+     `sudo systemctl stop firewalld ; sudo systemctl disable firewalld`
+   
 ## Install and start up PostgreSQL
 
    - `sudo yum install -y postgresql-server`
    - `sudo su - postgres -c '/bin/pg_ctl initdb'`
-   - `systemctl enable postgresql ; systemctl start postgresql`
+   - `sudo systemctl enable postgresql ; sudo systemctl start postgresql`
 
 ## Install iRODS server and development pkgs
-   - setup ICAT: identical to  Ubuntu/PostgreSQL, follow instruction at :
+   - setup ICAT: same `psql` commands as with Ubuntu/PostgreSQL setup, so follow instruction at :
      `https://docs.irods.org/4.2.6/getting_started/installation/#database-setup`
+
    - install iRODS packages
 
       * Add repository:
@@ -33,17 +38,15 @@
 
    - `sudo python /var/lib/irods/scripts/setup_irods.py </var/lib/irods/packaging/localhost_setup_postgres.input`
 
-## Install iRODS externals pre-req's for S3 & Python
+## Install iRODS  cacheless S3 resource plugin
 
-   - `sudo yum install -y irods-rule-engine-plugin-python`
-
-   - `sudo yum install -y irods-externals\* gcc openssl-devel curl-devel libxml2-devel rpm-build`
-
+   - `sudo yum install -y irods-externals\* gcc openssl-devel curl-devel libxml2-devel`
+   - (this will take a few minutes so get coffee)
    - `mkdir ~/github ; cd ~/github ; git clone https://github.com/irods/irods_resource_plugin_s3`
 
    - `cd irods_resource_plugin_s3 && git checkout 4-2-stable ; mkdir ../obj ; cd ../obj ; /opt/irods-externals/cmake3.11.4-0/bin/cmake ../irods*s3`
 
-   - `make -j3 package ; rpm -ivh --force ../irods*s3*rpm`
+   - `make -j3 && sudo install libs3.so /usr/lib/irods/plugins/resources`
 
 ## As the iRODS admin, make the resource
 
