@@ -1,11 +1,12 @@
 
 # iRODS and S3 setup for Agriculture Victoria iRODS demo
+
 - Centos 7 based setup
 - if we're on a VM, need >= 15 GB on root partn to start. will move database to a different
   partition, later, if needed to support large amounts of metadata.
 - allot 4 CPUs (ie 8 cores, or threads, as shown by `htop` display)
 
-## OS changes
+## Linux / CentOS-7 related 
 
    - edit `/etc/selinux/config`
      replace `enforcing` with `disabled` and reboot
@@ -16,7 +17,30 @@
    - `sudo yum install -y epel-release wget git vim nano tmux htop`
    - disable firewall
      `sudo systemctl stop firewalld ; sudo systemctl disable firewalld`
-   
+
+Install Docker CE.  Source [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7) for full instructions.
+This should be done as the sudo-enabled user (necessary for hosting Metalnx)
+    ```
+    $ sudo yum check-update
+ 
+    curl -fsSL https://get.docker.com/ | sh
+ 
+    sudo systemctl start docker
+
+    `sudo usermod -aG docker $(whoami)`
+    and optionally: `sudo usermod -aG docker irods`
+    
+   - log out, then back in (to refresh shell environment) - or reboot if necessary
+    
+    $ sudo systemctl status docker
+    $ docker pull alpine
+    $ docker run -it --rm alpine echo hello world
+    ```
+If docker is running properly, enable for auto start on reboot:
+```
+sudo systemctl enable docker
+```
+
 ## Install and start up PostgreSQL
 
    - `sudo yum install -y postgresql-server`
@@ -57,7 +81,7 @@
    - ```
      iadmin mkresc s3resc s3  $(hostname):/avr-irods-data "S3_DEFAULT_HOSTNAME=s3.ap-southeast-2.amazonaws.com;S3_AUTH_FILE=/var/lib/irods/s3.keypair;S3_REGIONNAME=ap-southeast-2;S3_RETRY_COUNT=2;S3_WAIT_TIME_SEC=3;S3_PROTO=HTTP;HOST_MODE=cacheless_attached;S3_SIGNATURE_VERSION=4;S3_ENABLE_MPU=1;S3_MPU_THREADS=30;S3_MPU_CHUNK=256"
      ```
-   - Register S3 contents with: 
+   - Register S3 contents (note - serially, without parallelism, an initial registration type ingest can take hours) with: 
 
      `ireg -R s3resc -C /avr-irods-data/"Example Data" /tempZone/home/rods/"Example Data"`
 
@@ -66,10 +90,11 @@
      `irm -Ur /tempZone/home/rods/"Example Data"`
      (Do not use `irm -fr ... ` as this could delete bucket contents.)   
 
-## install s3fs and mounting an s3 bucket as filesystem
-   - The Proof Of Concept will use an s3fs mounted bucket to allow arbitrary POSIX-like accesses to a file object in the bucket without downloading the full object.
+### install s3fs and mounting an s3 bucket as filesystem
+
+The fuse layer doesn't provide a seek operation other than by reading, in Proof Of Concept we can still use an s3fs  mounted bucket to allow arbitrary POSIX-like accesses to file objects in the bucket without necessitating a full download.  This is beneficial for cases in which a extracting relevant metadata from the "file" involves header-only (with onlyl a minority of the file being read) or modification of the tool to use iRODS read API calls is impossible or cumbersome . The setup:
    
-   - `sudo yum install s3fs-fuse` (as admin enabled user)
+   - `sudo yum install -y s3fs-fuse` (as admin enabled user)
    
    - setup example (as iRODS) : (having placed <Access_Key>:<secret_key> into `~irods/.passwd-s3fs`
      issue this command, as `irods` user:
@@ -82,6 +107,22 @@
    ```
    s3fs#avr-irods-data /mnt/avr-irods-data fuse ro,allow_other,umask=022,passwd_file=/etc/avr-irods-data_passwd-s3fs,endpoint=ap-southeast-2,url=https://s3.ap-southeast-2.amazonaws.com
    ```
-   
+
+## Setting up for greater efficiency and economy in S3 file ingest
+
+We registering from S3 while extracting metadata extraction from large images' EXIF headers
+
+Large images (ie TIFs) can include key-value metadata in EXIF headers, and these can be distributed throughout the body of the image file intermixed with data segments.  For extraction via the post-register hook we can access these very efficiently/economically using the python-irodsclient's data_object read method with the iRODS automated ingest tool.  see next section.
+
 ## install iRODS-capability-automated-ingest
-   - 
+   - `sudo yum install -y python2-pip python-virtualenv python36`
+   - as irods: `cd ~irods ; pip install irods_capability_automated_ingest`
+
+## MetaLnx
+   - `docker pull irods/metalnx`
+   - `git clone irods-contrib/metalnx-web`; copy the etc/irods-ext
+   ```
+   docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v `pwd`/irods-ext:/etc/irods-ext:ro  irods/metalnx
+   ```
+   
+## WebDAV
