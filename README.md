@@ -21,7 +21,8 @@
 
 Install Docker CE.  Source [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7) for full instructions. Docker CE will be necessary for hosting Metalnx.
 This should be done as the sudo-enabled user: 
-    ```
+
+```
     $ sudo yum check-update
  
     curl -fsSL https://get.docker.com/ | sh
@@ -36,7 +37,8 @@ This should be done as the sudo-enabled user:
     $ sudo systemctl status docker
     $ docker pull alpine
     $ docker run -it --rm alpine echo hello world
-    ```
+```
+    
 If docker is running properly, enable for auto start on reboot:
 ```
 sudo systemctl enable docker
