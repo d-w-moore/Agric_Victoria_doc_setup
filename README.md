@@ -120,7 +120,8 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
 
 ## MetaLnx
    - `docker pull irods/metalnx`
-   - `git clone irods-contrib/metalnx-web`; copy the etc/irods-ext
+   - `git clone irods-contrib/metalnx-web`; cd to just above `irods-ext`
+   - modify `irods-ext/metalnx.properties` irods.* and db.*  settings and configure `ssl.negotiation.policy=CS_NEG_REFUSE`
    ```
    docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v `pwd`/irods-ext:/etc/irods-ext:ro  irods/metalnx
    ```
