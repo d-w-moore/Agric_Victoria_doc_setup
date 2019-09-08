@@ -11,15 +11,16 @@
    - edit `/etc/selinux/config`
      replace `enforcing` with `disabled` and reboot
      (on next reboot `sestatus` should show that SELinux is **disabled**)
-   - configure passwordless `sudo`
-     `loginName ALL=(ALL) NOPASSWD: ALL` as last
-     line of `sudoers`
+   - configure passwordless `sudo`:
+      * `sudo visudo` and enter login password when challenged (for the last time ever!)
+      * `loginName ALL=(ALL) NOPASSWD: ALL` as last
+         line of `sudoers`
    - `sudo yum install -y epel-release wget git vim nano tmux htop`
    - disable firewall
      `sudo systemctl stop firewalld ; sudo systemctl disable firewalld`
 
-Install Docker CE.  Source [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7) for full instructions.
-This should be done as the sudo-enabled user (necessary for hosting Metalnx)
+Install Docker CE.  Source [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7) for full instructions. Docker CE will be necessary for hosting Metalnx.
+This should be done as the sudo-enabled user: 
     ```
     $ sudo yum check-update
  
@@ -65,7 +66,7 @@ sudo systemctl enable docker
 ## Install iRODS  cacheless S3 resource plugin
 
    - `sudo yum install -y irods-externals\* gcc openssl-devel curl-devel libxml2-devel`
-   - (this will take a few minutes so get coffee)
+   - (this will take a few minutes, so go and get coffee...)
    - `mkdir ~/github ; cd ~/github ; git clone https://github.com/irods/irods_resource_plugin_s3`
 
    - `cd irods_resource_plugin_s3 && git checkout 4-2-stable ; mkdir ../obj ; cd ../obj ; /opt/irods-externals/cmake3.11.4-0/bin/cmake ../irods*s3`
