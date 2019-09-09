@@ -16,8 +16,7 @@
       * `loginName ALL=(ALL) NOPASSWD: ALL` as last
          line of `sudoers`
    - `sudo yum install -y epel-release wget git vim nano tmux htop`
-   - disable firewall
-     `sudo systemctl stop firewalld ; sudo systemctl disable firewalld`
+   - Either take steps to expose needed ports (1247 for irods, 80 & 8080 for web, etc) or disable firewalld
 
 Install Docker CE.  Source [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7) for full instructions. Docker CE will be necessary for hosting Metalnx.
 This should be done as the sudo-enabled user: 
