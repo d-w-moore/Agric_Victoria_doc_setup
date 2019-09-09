@@ -10,7 +10,7 @@
 
    - edit `/etc/selinux/config`
      replace `enforcing` with `disabled` and reboot
-     (on next reboot `sestatus` should show that SELinux is **disabled**)
+     (on next reboot `sestatus` should show that SELinux is disabled)
    - configure passwordless `sudo`:
       * `sudo visudo` and enter login password when challenged (for the last time ever!)
       * `loginName ALL=(ALL) NOPASSWD: ALL` as last
