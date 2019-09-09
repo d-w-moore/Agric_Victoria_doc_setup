@@ -1,5 +1,5 @@
 
-# iRODS and S3 setup for Agriculture Victoria iRODS demo
+# iRODS and S3 setup for Agr. Vict. & iRODS 
 
 - Centos 7 based setup
 - if we're on a VM, need >= 15 GB on root partn to start. will move database to a different
