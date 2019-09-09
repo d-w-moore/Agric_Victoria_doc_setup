@@ -111,15 +111,21 @@ The fuse layer doesn't provide a seek operation other than by reading, in Proof 
    s3fs#avr-irods-data /mnt/avr-irods-data fuse ro,allow_other,umask=022,passwd_file=/etc/avr-irods-data_passwd-s3fs,endpoint=ap-southeast-2,url=https://s3.ap-southeast-2.amazonaws.com
    ```
 
-## Setting up for greater efficiency and economy in S3 file ingest
+## Setting up for better efficiency and economy in S3 file ingest
 
 We registering from S3 while extracting metadata extraction from large images' EXIF headers
 
 Large images (ie TIFs) can include key-value metadata in EXIF headers, and these can be distributed throughout the body of the image file intermixed with data segments.  For extraction via the post-register hook we can access these very efficiently/economically using the python-irodsclient's data_object read method with the iRODS automated ingest tool.  see next section.
 
-## install iRODS-capability-automated-ingest
+## install iRODS automated-ingest tool
+   - can take advantage of client's access to S3 bucket to register S3 objects in place, extract metadata and attach it to the objects in the iRODS catalog, and take advantage of multiple cores ie use the CPU parallelism available
    - `sudo yum install -y python2-pip python-virtualenv python36`
-   - as irods: `cd ~irods ; pip install irods_capability_automated_ingest`
+   - as irods: 
+   ```
+   $ cd ~irods 
+   $ virtualenv -p python3 rodssync
+   $ source rodssync/bin/activate
+   $ pip install irods_capability_automated_ingest
 
 ## MetaLnx
    - `docker pull irods/metalnx`
@@ -128,5 +134,17 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
    ```
    docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v `pwd`/irods-ext:/etc/irods-ext:ro  irods/metalnx
    ```
-   
+   - access port 8080 on the host's IP interfaces: http://hostname.org:8080/metalnx
 ## WebDAV
+   - install package httpd : `sudo yum install -y httpd`
+   
+   - Follow instructions at https://github.com/UtrechtUniversity/davrods
+   
+   - in `/etc/httpd/irods/irods_environment.json` configure CS_NEG_REFUSE and irods zone, host and port params
+     (can use `localhost` to refer to iRODS server host, if httpd and iRODS are resident on same server)
+   - in virtual host ServerName declaration, give valid DNS hostname eg `dav.example.com` and make sure this
+     hostname is matched by host or network DNS configuration (eg. put entry for `dav.example.com` in etc/hosts)
+   - if another port is desired, say port 8000:
+      * add `Listen 8000` to `/etc/httpd/httpd.conf`
+      * configure VirtualHost declaration with \*:8000
+   - `systemctl restart httpd ; systemctl  enable httpd`
