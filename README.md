@@ -125,6 +125,8 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
    $ virtualenv -p python3 rodssync
    $ source rodssync/bin/activate
    $ pip install irods_capability_automated_ingest
+
+          [ ... watch this section for changes ]
    ```
    
 ## MetaLnx
