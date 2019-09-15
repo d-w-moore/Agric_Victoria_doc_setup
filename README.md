@@ -116,8 +116,10 @@ We registering from S3 while extracting metadata extraction from large images' E
 
 Large images (ie TIFs) can include key-value metadata in EXIF headers, and these can be distributed throughout the body of the image file intermixed with data segments.  For extraction via the post-register hook we can access these very efficiently/economically using the python-irodsclient's data_object read method with the iRODS automated ingest tool.  see next section.
 
-## install iRODS automated-ingest tool
-   - can take advantage of client's access to S3 bucket to register S3 objects in place, extract metadata and attach it to the objects in the iRODS catalog, and take advantage of multiple cores ie use the CPU parallelism available
+## install iRODS automated-ingest tool and register S3 files and metadata
+   - Here, we create the entries in iRODS's ICAT (object catalog) that reflect what is in the S3 bucket.
+   - We also extract metadata from TIF files (add'l metadata options will exist later.)
+   - We can take advantage of client's access to S3 bucket to register S3 objects in place, extract metadata and attach it to the objects in the iRODS catalog, and take advantage of multiple cores ie use the CPU parallelism available
    - `sudo yum install -y python2-pip python-virtualenv python36`
    - as irods: 
    ```
@@ -125,10 +127,19 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
    $ virtualenv -p python3 rodssync
    $ source rodssync/bin/activate
    $ pip install irods_capability_automated_ingest
-
-          [ ... watch this section for changes ]
+   $ pip install exifread 
    ```
+   # in separate terminals (or tmux windows)
+   As service account user `irods`, with the rodssync virtual environment enabled (ie do `source ~irods/rodssync/bin/activate` under bash shell):
    
+   ```             
+       - start celery workers:
+         $ celery -A irods_capability_automated_ingest.sync_task worker -l error -Q restart,path,file
+         
+       - do the ingest:
+         $ python -m irods_capability_automated_ingest.irods_sync start "/avr-irods-data/Example Data/" "/tempZone/home/rods/Example Data" --s3_keypair /var/lib/irods/s3.keypair --s3_endpoint_domain s3.ap-southeast-2.amazonaws.com --s3_region_name ap-southeast-2 --event_handler tiff_event_handler --synchronous --initial_ingest
+```
+
 ## MetaLnx
    - `docker pull irods/metalnx`
    - `git clone irods-contrib/metalnx-web`; cd to just above `irods-ext`
