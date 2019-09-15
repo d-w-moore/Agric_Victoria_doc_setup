@@ -83,14 +83,18 @@ sudo systemctl enable docker
    - ```
      iadmin mkresc s3resc s3  $(hostname):/avr-irods-data "S3_DEFAULT_HOSTNAME=s3.ap-southeast-2.amazonaws.com;S3_AUTH_FILE=/var/lib/irods/s3.keypair;S3_REGIONNAME=ap-southeast-2;S3_RETRY_COUNT=2;S3_WAIT_TIME_SEC=3;S3_PROTO=HTTP;HOST_MODE=cacheless_attached;S3_SIGNATURE_VERSION=4;S3_ENABLE_MPU=1;S3_MPU_THREADS=30;S3_MPU_CHUNK=256"
      ```
-   - Register S3 contents (note - serially, without parallelism, an initial registration type ingest can take hours) with: 
+   - If we were registering the s3 files the traditional iRODS way, aka the SLOW approach:
+   
+      * One would register S3 contents (note - serially ie. without parallelism, an initial registration type ingest can take hours) with: 
 
-     `ireg -R s3resc -C /avr-irods-data/"Example Data" /tempZone/home/rods/"Example Data"`
+        `ireg -R s3resc -C /avr-irods-data/"Example Data" /tempZone/home/rods/"Example Data"`
 
-   - When/if necessary, unregister S3 contents with (in this case): 
+      * When/if necessary, you would unregister S3 contents with (in this case): 
 
-     `irm -Ur /tempZone/home/rods/"Example Data"`
-     (Do not use `irm -fr ... ` as this could delete bucket contents.)   
+        `irm -Ur /tempZone/home/rods/"Example Data"`
+        (Do not use `irm -fr ... ` as this could delete bucket contents.)  
+
+   - instead, we'll do the registration with the automated ingest tool (we'll come to this soon!)
 
 ### install s3fs and mounting an s3 bucket as filesystem
 
@@ -112,12 +116,13 @@ The fuse layer doesn't provide a seek operation other than by reading, in Proof 
 
 ## Setting up for better efficiency and economy in S3 file ingest
 
-We registering from S3 while extracting metadata extraction from large images' EXIF headers
+We'll be registering from S3 while extracting metadata extraction from large images' EXIF headers
 
-Large images (ie TIFs) can include key-value metadata in EXIF headers, and these can be distributed throughout the body of the image file intermixed with data segments.  For extraction via the post-register hook we can access these very efficiently/economically using the python-irodsclient's data_object read method with the iRODS automated ingest tool.  see next section.
+Large images (ie TIFs) can include key-value metadata in EXIF headers, and these can be distributed throughout the body of the image file intermixed with data segments.  For extraction via the post-register hook we can access these very efficiently/economically using the python-irodsclient's data_object read method with the iRODS automated ingest tool.  
 
 ## install iRODS automated-ingest tool and register S3 files and metadata
-   - Here, we create the entries in iRODS's ICAT (object catalog) that reflect what is in the S3 bucket.
+
+- Here, we create the entries in iRODS's ICAT (object catalog) that reflect what is in the S3 bucket.
    - We also extract metadata from TIF files (add'l metadata options will exist later.)
    - We can take advantage of client's access to S3 bucket to register S3 objects in place, extract metadata and attach it to the objects in the iRODS catalog, and take advantage of multiple cores ie use the CPU parallelism available
    - `sudo yum install -y python2-pip python-virtualenv python36`
@@ -129,6 +134,9 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
    $ pip install irods_capability_automated_ingest
    $ pip install exifread 
    ```
+
+## Performing the initial ingest
+
    # in separate terminals (or tmux windows)
    As service account user `irods`, with the rodssync virtual environment enabled (ie do `source ~irods/rodssync/bin/activate` under bash shell):
    
