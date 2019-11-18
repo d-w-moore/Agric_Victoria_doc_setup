@@ -105,11 +105,13 @@ The fuse layer doesn't provide a seek operation other than by reading, in Proof 
    - setup example (as iRODS) : (having placed <Access_Key>:<secret_key> into `~irods/.passwd-s3fs`
      issue this command, as `irods` user:
      ```
-     cd ; mkdir irods_s3 ; s3fs avr-irods-data `pwd`/irods_s3 -o passwd_file=$HOME/.passwd-s3fs,umask=033,allow_other,endpoint="ap-southeast-2",url="https://s3.ap-southeast-2.amazonaws.com"
+     cd ; mkdir irods_s3 ; s3fs avr-irods-data `pwd`/irods_s3 -o passwd_file=$HOME/.passwd-s3fs,umask=022,allow_other,endpoint="ap-southeast-2",url="https://s3.ap-southeast-2.amazonaws.com"
      ```
-     The command `fusermount -u irods_s3` will unmount the filesystem.
+   - Additionally, `user_allow_other` needs to be set in `/etc/fuse.conf`
+   - The command `fusermount -u irods_s3` will unmount the filesystem.
      
    - Appending the following line in the `/etc/fstab` will cause the bucket to be mounted  automatically at boot time.
+   
    ```
    s3fs#avr-irods-data /mnt/avr-irods-data fuse ro,allow_other,umask=022,passwd_file=/etc/avr-irods-data_passwd-s3fs,endpoint=ap-southeast-2,url=https://s3.ap-southeast-2.amazonaws.com
    ```
