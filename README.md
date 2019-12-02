@@ -168,9 +168,10 @@ To deploy Metalnx  from a docker container, as a service available on the web at
    ```
    - Start up the Metalnx application
    ```
-   docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v `pwd`/irods-ext:/etc/irods-ext:ro  irods/metalnx
+   docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v $HOME/irods-ext:/etc/irods-ext:ro  irods/metalnx
    ```
-   - access port 8080 on the host's IP interfaces: http://hostname.org:8080/metalnx
+   - access port 8080 on the host's IP interface: `http://yourhostname.org:8080/metalnx`
+   
 ## WebDAV
    - install package httpd : `sudo yum install -y httpd`
    
