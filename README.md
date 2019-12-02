@@ -151,9 +151,22 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
 ```
 
 ## MetaLnx
+
+To deploy Metalnx  from a docker container, as a service available on the web at port 8080:
    - `docker pull irods/metalnx`
-   - `git clone irods-contrib/metalnx-web`; cd to just above `irods-ext`
-   - modify `irods-ext/metalnx.properties` irods.* and db.*  settings and configure `ssl.negotiation.policy=CS_NEG_REFUSE`
+   - `git clone irods-contrib/metalnx-web`; cd to just above `irods-ext` and `cp -r irods-ext $HOME/.`
+   - modify `~/irods-ext/metalnx.properties` irods.* and db.*  settings and configure `ssl.negotiation.policy=CS_NEG_REFUSE`
+   - also change  the `acPreConnect()` rule in `/etc/irods/core.re` [or `.py`] file such that `CS_NEG_REFUSE` is the value returned
+   - in the `pg_hba.conf` add the line:
+   ```
+   host    all             all             172.17.0.1/16           md5
+   ```
+   (where the `172.17.0.1/16` mask is the bridge network provided by the docker network)
+   - and in `postgresql.conf` add the line:
+   ```
+   listen_addresses = '*'
+   ```
+   - Start up the Metalnx application
    ```
    docker run -d --add-host hostcomputer:172.17.0.1 -p 8080:8080 --rm -it -v `pwd`/irods-ext:/etc/irods-ext:ro  irods/metalnx
    ```
@@ -171,3 +184,4 @@ Large images (ie TIFs) can include key-value metadata in EXIF headers, and these
       * add `Listen 8000` to `/etc/httpd/httpd.conf`
       * configure VirtualHost declaration with \*:8000
    - `systemctl restart httpd ; systemctl  enable httpd`
+   
